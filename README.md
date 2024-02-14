@@ -9,7 +9,7 @@ on any function to enable the memoization.
 > In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls to pure functions and returning the cached result when the same inputs occur again. Memoization has also been used in other contexts, such as in simple mutually recursive descent parsing. [Wikipedia](https://en.wikipedia.org/wiki/Memoization) 
 
 
-```{python}
+```python
 from doorget import cache
 import panda as pd
 
@@ -36,7 +36,7 @@ The package propose you 3 built in storage modes and also to provide any other c
 This is the default storage which caches all returned data in memory. This is the fastest way to retreive  data
 from an existing input. But this mode has 3 caveats. The first caveat is that the data is cached within your current process only. After your process ends all cached data will be lost. It avoids you sharing the cached data between processes as well. The second caveat is the limited memory constrained by your hardware to couple of Giga Bytes maximum.
 
-```{python}
+```python
 from doorget import cache, StorageMode
 import panda as pd
 
@@ -59,7 +59,7 @@ is returned, pickle otherwise.
 
 If no cache folder is specified, the default is used instead. the function and its module name are used as sub folder to guarantie an unique storage location. The default folder can be change at any time with the function `setup_disk_storage` 
 
-```{python}
+```python
 from doorget import cache, StorageMode
 import panda as pd
 
@@ -87,7 +87,7 @@ When you specify this mode you have to specify the `storage` argument as well. I
 
 Your custom storage is required to inherit from the `Storage` class.
 
-```
+```python
 from typing import Any, List
 from dataclasses import dataclass
 from doorget import CacheKey
@@ -117,7 +117,7 @@ class Storage:
 
 The added value from a simple memoized function is the carry of data dependencies. When a complex object like a pandas DataFrame is passed as an argument, it is not used directly to build the key, but substitued with its own memoized key.
 
-```{python}
+```python
 from doorget import cache
 import panda as pd
 
@@ -143,7 +143,7 @@ memoized key. If the function returns a `Tuple`, the contained items are tracked
 Sometime it is faster to transform a data than memoizing it. If this transformed data is used as aan argument for another memoized function, the data dependency is lost. To not break the data dependencies you can isolate you can isolate your
 data transformation in a memoized function with the `Identity` storage mode.
 
-```{python}
+```python
 @cache(mode=StorageMode.Identity)
 def transform(x: pd.DataFrame) -> pd.DataFrame:
     return x.copy()
