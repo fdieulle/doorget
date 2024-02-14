@@ -1,13 +1,15 @@
 # doorget
 
-Python package which memoizes functions with a support of data dependencies. 
-It can be adapt to your code with a low touch by using the `cache` decorator 
-on any function to enable the memoization.
+Python package which memoizes functions and supports data dependencies across them.
+With the `cache` decorator the memoization of your code is low touch.
 
 ## Memoization
 
+### Definition
+
 > In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls to pure functions and returning the cached result when the same inputs occur again. Memoization has also been used in other contexts, such as in simple mutually recursive descent parsing. [Wikipedia](https://en.wikipedia.org/wiki/Memoization) 
 
+### Example
 
 ```python
 from doorget import cache
@@ -17,24 +19,29 @@ import panda as pd
 def fetch(name: str) -> pd.DataFrame:
     pass
 
+# do it
 foo = fetch('foo') # The function is called
-foo_again = fetch('foo') # The function is not called, the previous returned data is read from the cache instead
+# get it
+foo_again = fetch('foo') # The previous returned data is read from the cache and the function is not called.
+# do it
 bar = fetch('bar') # The function is called because the input is not known yet
 ```
 
 ## Storage modes
 
-The package propose you 3 built in storage modes and also to provide any other custom storage.
+The package propose you 3 built in storage modes and the ability to proivde your customized storages.
 
 * `Memory`: The fastest mode.
 * `Disk`: The unlimited mode.
-* `Identity` This mode is a helper for data [dependencies](#data_dependencies) and [cascades](#cascade_data_identity)
-* `Custom`: Your best mode
+* `Identity` The tracker mode for data [dependencies](#data_dependencies) and [cascades](#cascade_data_identity).
+* `Custom`: Your best mode.
 
 ### Memory
 
-This is the default storage which caches all returned data in memory. This is the fastest way to retreive  data
-from an existing input. But this mode has 3 caveats. The first caveat is that the data is cached within your current process only. After your process ends all cached data will be lost. It avoids you sharing the cached data between processes as well. The second caveat is the limited memory constrained by your hardware to couple of Giga Bytes maximum.
+The memory storage use the RAM memory to memoize data.
+
+This is the default storage mode. It is the fastest way to retreive  data from an existing input. 
+But this mode has 2 caveats. The first caveat is that the data is cached within your current process only. Once your process ends all cached data are lost. It avoids you sharing the cached data between processes neither. The second caveat is the limited memory, constrained by your hardware to a couple of Giga Bytes maximum.
 
 ```python
 from doorget import cache, StorageMode
@@ -53,39 +60,49 @@ def bar(name: str) -> pd.DataFrame:
 
 ### Disk
 
-This is the most common usage af the memoization. It is slower than the `Memory` mode because the data is read from
-the disk but it solves the 2 caveats. To improve the speed the `Disk` mode use the parquet format if a pandas `DataFrame`
-is returned, pickle otherwise.
+The disk storage use the disk to memoize data.
 
-If no cache folder is specified, the default is used instead. the function and its module name are used as sub folder to guarantie an unique storage location. The default folder can be change at any time with the function `setup_disk_storage` 
+This is the most common usage of the memoization. It is slower than the `Memory` mode because the data is read from
+the disk but it solves the 2 caveats. The built in `Disk` mode uses `parquet` format if a pandas `DataFrame`
+is returned, `pickle` otherwise.
+
+If no cache folder is specified, a global folder is used instead. When the global folder is prefered, a sub folder is created by function from its name and module to guaranty an unique storage location. 
+
+The global folder can change at any time with the function `setup_disk_storage`.
 
 ```python
-from doorget import cache, StorageMode
+from doorget import cache, StorageMode, setup_disk_storage
 import panda as pd
 
 
-@cache(mode=StorageMode.Disk) # Use the default folder
+@cache(mode=StorageMode.Disk) # Use the global folder
 def fetch_default(name: str) -> pd.DataFrame:
     pass
 
-@cache(mode=StorageMode.Disk, cache_folder='./my_custom/folder/bar')
+@cache(cache_folder='./my_custom/folder/bar') # Overrides the global folder
 def fetch_custom(name: str) -> pd.DataFrame:
     pass
 
-
+# do it
 fetch_default('foo')
+# do it
 fetch_custom('bar')
 
 setup_disk_storage('./my_default/folder')
-fetch_default('foo') # Function call because the cache folder changed
-fetch_custom('bar') # Data read
+
+# do it
+fetch_default('foo') # Function is called because the cache folder changed
+# get it
+fetch_custom('bar') # The function is not called because the custom folder is unchanged
 ```
 
 ### Custom
 
-When you specify this mode you have to specify the `storage` argument as well. It allows to defin any knid of storage which could fits better your use case, for performances, infrastructure, sharing, ... purpose.
+The custom storage allows you to provide you own cache where the data is memoized.
 
-Your custom storage is required to inherit from the `Storage` class.
+When you specify this mode you have to specify the `storage` argument. This argument takes any kind of storage which could fits better your use case, for performances, infrastructure, sharing, ... purpose.
+
+Your custom storage imlplementation must inherit from the `Storage` class.
 
 ```python
 from typing import Any, List
@@ -113,9 +130,12 @@ class Storage:
         pass
 ```
 
-## Data dependencies
+## Data dependency
 
-The added value from a simple memoized function is the carry of data dependencies. When a complex object like a pandas DataFrame is passed as an argument, it is not used directly to build the key, but substitued with its own memoized key.
+The added value from a simple memoized package is the carrying of data dependencies. 
+
+When a complex object, like a pandas `DataFrame`, is passed as an argument, a simple memoization won't work.
+With `doorget` when a complex object is passed as an argument, it is not used directly to build the key, but substitued with its own memoized key.
 
 ```python
 from doorget import cache
@@ -126,11 +146,11 @@ def fetch(name: str) -> pd.DataFrame:
     pass
 
 @cache
-def fetch(df: pd.DataFrame, scope: str) -> pd.DataFrame:
+def summarize(by: str, df: pd.DataFrame) -> pd.DataFrame:
     pass
 
-df = fetch('foo') # key for df => "fetch('foo')"
-summary = summarize(df, 'daily') # key for summary => "summarize(fetch('foo'), 'daily')"
+df = fetch('foo') # key for df: <fetch('foo')>
+summary = summarize('date', df) # key for summary: <summarize(<fetch('foo')>, 'daily')>
 
 ```
 
@@ -140,18 +160,20 @@ memoized key. If the function returns a `Tuple`, the contained items are tracked
 
 ## Cascade data identity
 
-Sometime it is faster to transform a data than memoizing it. If this transformed data is used as aan argument for another memoized function, the data dependency is lost. To not break the data dependencies you can isolate you can isolate your
-data transformation in a memoized function with the `Identity` storage mode.
+Sometime it is faster to transform a data than memoizing it. If this transformed data is used as an argument for another memoized function, the data dependency is lost. To avoid breaking a dependency, you can isolate your
+data transformation within a memoized function with the `Identity` storage mode. It will carry no additional storage
+than what your program is currently using. Under the hood the data graph is tracked by their references or `Identity`
+in python.
 
 ```python
 @cache(mode=StorageMode.Identity)
 def transform(x: pd.DataFrame) -> pd.DataFrame:
     return x.copy()
 
-df = fetch('foo') # key for df => "fetch('foo')"
-df_copy = transform(df) # key for df_copy => "transform(fetch('foo'))"
+df = fetch('foo') # key for df: <fetch('foo')>
+df_copy = transform(df) # key for df_copy: <transform(<fetch('foo')>)>
 
-summary = summarize(df_copy, 'daily') # key for summary => "summarize(transform(fetch('foo')), 'daily')"
+summary = summarize('date', df_copy) # key for summary: <summarize(<transform(<fetch('foo')>)>, 'daily')>
 ```
 
 ## Administrate your caches
@@ -162,7 +184,7 @@ The package provides you some backdoors to administrate your caches and more pre
 * `list_disk_storages()`
 * `list_custom_storages()`
 
-Each memoized function has its owned storage. From a storage you can list all the contained keys, but also 
-remove some or clear them all. A function call is stored in a `CacheKey` object which represents the function
-called with its input combination as a `Tuple`. If the key has data depedencies the dependencies are nested
-by using `Tuple` recursively.  
+Each memoized function has its owned storage list. From a storage you can list all the contained keys,  
+remove some items or clear them all. A function call, is stored in a `CacheKey` object. A `CacheKey` object 
+contains the function name with its arguments combination as a `Tuple`. If the key has data depedencies, 
+the dependencies are nested by using `Tuple` recursively.
