@@ -166,6 +166,9 @@ than what your program is currently using. Under the hood the data graph is trac
 in python.
 
 ```python
+from doorget import cache, StorageMode
+import panda as pd
+
 @cache(mode=StorageMode.Identity)
 def transform(x: pd.DataFrame) -> pd.DataFrame:
     return x.copy()
