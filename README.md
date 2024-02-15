@@ -2,6 +2,7 @@
 
 [![build](https://github.com/fdieulle/doorget/actions/workflows/build.yml/badge.svg)](https://github.com/fdieulle/doorget/actions/workflows/build.yml)
 [![release](https://github.com/fdieulle/doorget/actions/workflows/release.yml/badge.svg)](https://github.com/fdieulle/doorget/actions/workflows/release.yml)
+[![codecov](https://codecov.io/gh/fdieulle/doorget/graph/badge.svg?token=NQQ17SQUYK)](https://codecov.io/gh/fdieulle/doorget)
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=3600)](./LICENSE) 
 [![pypi](https://img.shields.io/pypi/v/doorget.svg)](https://pypi.org/project/doorget/)
