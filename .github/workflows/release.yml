@@ -5,6 +5,9 @@ on:
 
 name: Release
 
+permissions:
+  contents: write
+
 jobs:
   autorelease:
     name: Create Release
@@ -35,13 +38,13 @@ jobs:
         run: git log $(git describe HEAD~ --tags --abbrev=0)..HEAD --pretty='format:* %h %s%n  * %an <%ae>' --no-merges >> ".github/release_template.md"
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body_path: ".github/release_template.md"
           files: |
             dist/doorget-${{env.PROJECT_VERSION}}-py3-none-any.whl
             dist/doorget-${{env.PROJECT_VERSION}}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
