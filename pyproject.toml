@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "doorget"
-dynamic = ["version"]
 authors = [
   { name="Fabien Dieulle", email="fabien.dieull@hotmail.fr" },
 ]
@@ -17,6 +16,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["version"]
+[tool.setuptools_scm]
 
 [project.urls]
 Homepage = "https://github.com/fdieulle/doorget"
