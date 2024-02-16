@@ -6,7 +6,9 @@ import numpy as np
 
 @cache
 def f1(id: int) -> pd.DataFrame:
-    return pd.DataFrame(np.random.normal(size=(100 * id, id)), columns=[f'C{i+1}' for i in range(id)])
+    return pd.DataFrame(
+        np.random.normal(size=(100 * id, id)), columns=[f"C{i+1}" for i in range(id)]
+    )
 
 
 @cache
@@ -38,45 +40,45 @@ def test_dependency():
     df1 = f1(1)
     df2 = f1(2)
 
-    df1_foo = f2(df1, 'foo')
-    df1_bar = f2(df1, 'bar')
+    df1_foo = f2(df1, "foo")
+    df1_bar = f2(df1, "bar")
 
-    assert all(df1_foo == f2(df1, 'foo'))
-    assert id(df1_foo) == id(f2(df1, 'foo'))
+    assert all(df1_foo == f2(df1, "foo"))
+    assert id(df1_foo) == id(f2(df1, "foo"))
 
     assert id(df1_foo) != id(df1_bar)
 
-    assert all(df1_bar == f2(df1, 'bar'))
-    assert id(df1_bar) == id(f2(df1, 'bar'))
+    assert all(df1_bar == f2(df1, "bar"))
+    assert id(df1_bar) == id(f2(df1, "bar"))
 
-    df2_foo = f2(df2, 'foo')
-    df2_bar = f2(df2, 'bar')
+    df2_foo = f2(df2, "foo")
+    df2_bar = f2(df2, "bar")
 
     assert id(df1_foo) != id(df2_foo)
     assert id(df1_foo) != id(df2_bar)
     assert id(df1_bar) != id(df2_bar)
 
-    assert all(df2_foo == f2(df2, 'foo'))
-    assert id(df2_foo) == id(f2(df2, 'foo'))
+    assert all(df2_foo == f2(df2, "foo"))
+    assert id(df2_foo) == id(f2(df2, "foo"))
 
     assert id(df2_foo) != id(df2_bar)
 
-    assert all(df2_bar == f2(df2, 'bar'))
-    assert id(df2_bar) == id(f2(df2, 'bar'))
+    assert all(df2_bar == f2(df2, "bar"))
+    assert id(df2_bar) == id(f2(df2, "bar"))
 
-    
+
 def test_dependency_with_transform_in_between():
-    df1 = f1(10) # key = f1(10)
+    df1 = f1(10)  # key = f1(10)
 
-    df1_copy = transform(df1) # key = transform(f1(10))
+    df1_copy = transform(df1)  # key = transform(f1(10))
 
-    df1_foo = f2(df1_copy, 'foo') # key = f2(transform(f1(10)),foo)
+    df1_foo = f2(df1_copy, "foo")  # key = f2(transform(f1(10)),foo)
 
-    assert all(df1_foo == f2(df1_copy, 'foo'))
-    assert id(df1_foo) == id(f2(df1_copy, 'foo'))
+    assert all(df1_foo == f2(df1_copy, "foo"))
+    assert id(df1_foo) == id(f2(df1_copy, "foo"))
 
-    assert all(df1_foo == f2(df1, 'foo'))
-    assert id(df1_foo) != id(f2(df1, 'foo'))
+    assert all(df1_foo == f2(df1, "foo"))
+    assert id(df1_foo) != id(f2(df1, "foo"))
 
 
 class Foo:
@@ -100,7 +102,7 @@ def f_with_args(arg1, arg2, arg3) -> Foo:
 
 
 @cache
-def f_with_default_value(id: int=10) -> Foo:
+def f_with_default_value(id: int = 10) -> Foo:
     return Foo([id])
 
 
@@ -116,7 +118,7 @@ def test_in_memory_no_args():
 
 
 def test_in_memory_with_arg():
-    arg = 'Hello world'
+    arg = "Hello world"
 
     r1 = f_with_arg(arg)
     assert r1.data[0] == arg
@@ -125,19 +127,19 @@ def test_in_memory_with_arg():
     assert r2 == r1
     assert r2.data[0] == arg
 
-    r3 = f_with_arg('Hello world')
+    r3 = f_with_arg("Hello world")
     assert r3 == r1
     assert r3.data[0] == arg
 
-    r4 = f_with_arg('Hello new world')
+    r4 = f_with_arg("Hello new world")
     assert r4 != r1
-    assert r4.data[0] == 'Hello new world'
+    assert r4.data[0] == "Hello new world"
 
 
 def test_in_memory_with_args():
-    arg1 = 'Hello'
-    arg2 = ' world '
-    arg3 = '!'
+    arg1 = "Hello"
+    arg2 = " world "
+    arg3 = "!"
 
     r1 = f_with_args(arg1, arg2, arg3)
     assert r1.data[0] == arg1
@@ -150,25 +152,25 @@ def test_in_memory_with_args():
     assert r2.data[1] == arg2
     assert r2.data[2] == arg3
 
-    r3 = f_with_args('Hello', arg2=' world ', arg3='!')
+    r3 = f_with_args("Hello", arg2=" world ", arg3="!")
     assert r3 == r1
     assert r3.data[0] == arg1
     assert r3.data[1] == arg2
     assert r3.data[2] == arg3
 
-    r4 = f_with_args('Hello', arg2=' new world ', arg3=arg3)
+    r4 = f_with_args("Hello", arg2=" new world ", arg3=arg3)
     assert r4 != r1
     assert r4.data[0] == arg1
-    assert r4.data[1] == ' new world '
+    assert r4.data[1] == " new world "
     assert r4.data[2] == arg3
 
-    r5 = f_with_args(arg2=' world ', arg3='!', arg1='Hello')
+    r5 = f_with_args(arg2=" world ", arg3="!", arg1="Hello")
     assert r5 == r1
     assert r5.data[0] == arg1
     assert r5.data[1] == arg2
     assert r5.data[2] == arg3
 
-    args = {'arg1': arg1, 'arg3': arg3, 'arg2': arg2}
+    args = {"arg1": arg1, "arg3": arg3, "arg2": arg2}
     r6 = f_with_args(**args)
     assert r6 == r1
     assert r6.data[0] == arg1
@@ -178,8 +180,8 @@ def test_in_memory_with_args():
 
 def test_in_memory_with_list_and_dict_args():
     arg1 = [1, 2, 3]
-    arg2 = {'key1': 123, 'key2': 'foo'}
-    arg3 = [1, {'k1': [1,2], 'k2': {1:1, 2:2}}, [1,[1,2],3]]
+    arg2 = {"key1": 123, "key2": "foo"}
+    arg3 = [1, {"k1": [1, 2], "k2": {1: 1, 2: 2}}, [1, [1, 2], 3]]
 
     r1 = f_with_args(arg1, arg2, arg3)
     assert r1.data[0] == arg1

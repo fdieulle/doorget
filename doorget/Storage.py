@@ -19,6 +19,7 @@ class Storage:
             bool: Returns True if the key is stored. False otherwise
         """
         pass
+
     def fetch(self, key: CacheKey) -> Any:
         """Fetch the data from the cache.
 
@@ -32,6 +33,7 @@ class Storage:
             Any: The cached data
         """
         pass
+
     def store(self, key: CacheKey, data: Any) -> None:
         """Store a data with its key
 
@@ -43,9 +45,9 @@ class Storage:
 
     # Cache management helpers
     def clear(self) -> None:
-        """Clear all cached data.
-        """
+        """Clear all cached data."""
         pass
+
     def remove(self, key: CacheKey) -> bool:
         """Remove a cached data by its key
 
@@ -56,6 +58,7 @@ class Storage:
             bool: Returns True if the data is deleted. False otherwise
         """
         pass
+
     def keys(self) -> List[CacheKey]:
         """List all the keys contained in the cache
 
