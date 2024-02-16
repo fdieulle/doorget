@@ -3,15 +3,18 @@ from typing import Any
 import pandas as pd
 import numpy as np
 
+
 @cache
 def f1(id: int) -> pd.DataFrame:
     return pd.DataFrame(np.random.normal(size=(100 * id, id)), columns=[f'C{i+1}' for i in range(id)])
+
 
 @cache
 def f2(x: pd.DataFrame, name: str) -> pd.DataFrame:
     x = x.copy()
     x[name] = 1.0
     return x
+
 
 @cache(mode=StorageMode.Identity)
 def transform(x: pd.DataFrame) -> pd.DataFrame:
@@ -29,6 +32,7 @@ def test_simple_case():
 
     assert all(df2 == f1(2))
     assert id(df2) == id(f1(2))
+
 
 def test_dependency():
     df1 = f1(1)
@@ -74,25 +78,31 @@ def test_dependency_with_transform_in_between():
     assert all(df1_foo == f2(df1, 'foo'))
     assert id(df1_foo) != id(f2(df1, 'foo'))
 
+
 class Foo:
     def __init__(self, data: Any):
         self.data = data
+
 
 @cache
 def f_no_args() -> Foo:
     return Foo(None)
 
+
 @cache
 def f_with_arg(arg) -> Foo:
     return Foo([arg])
+
 
 @cache
 def f_with_args(arg1, arg2, arg3) -> Foo:
     return Foo([arg1, arg2, arg3])
 
+
 @cache
 def f_with_default_value(id: int=10) -> Foo:
     return Foo([id])
+
 
 def test_in_memory_no_args():
     r1 = f_no_args()
@@ -103,6 +113,7 @@ def test_in_memory_no_args():
     assert r1 == r2
     assert id(r1) == id(r2)
     assert r2.data is None
+
 
 def test_in_memory_with_arg():
     arg = 'Hello world'
@@ -121,6 +132,7 @@ def test_in_memory_with_arg():
     r4 = f_with_arg('Hello new world')
     assert r4 != r1
     assert r4.data[0] == 'Hello new world'
+
 
 def test_in_memory_with_args():
     arg1 = 'Hello'
@@ -150,6 +162,20 @@ def test_in_memory_with_args():
     assert r4.data[1] == ' new world '
     assert r4.data[2] == arg3
 
+    r5 = f_with_args(arg2=' world ', arg3='!', arg1='Hello')
+    assert r5 == r1
+    assert r5.data[0] == arg1
+    assert r5.data[1] == arg2
+    assert r5.data[2] == arg3
+
+    args = {'arg1': arg1, 'arg3': arg3, 'arg2': arg2}
+    r6 = f_with_args(**args)
+    assert r6 == r1
+    assert r6.data[0] == arg1
+    assert r6.data[1] == arg2
+    assert r6.data[2] == arg3
+
+
 def test_in_memory_with_list_and_dict_args():
     arg1 = [1, 2, 3]
     arg2 = {'key1': 123, 'key2': 'foo'}
@@ -165,6 +191,7 @@ def test_in_memory_with_list_and_dict_args():
     assert r2.data[0] == arg1
     assert r2.data[1] == arg2
     assert r2.data[2] == arg3
+
 
 def test_in_memory_with_arg_with_default_value():
     r1 = f_with_default_value()

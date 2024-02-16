@@ -13,13 +13,13 @@ from .constants import __STORAGES__
 __INDEX_DISK_FILE_NAME__ = '__index.bin'
 
 
-def __create_folder(folder: str) -> str:
+def create_folder(folder: str) -> str:
     if not os.path.exists(folder):
         os.makedirs(folder)
     return folder
 
 
-def __delete_file(file_path: str) -> None:
+def delete_file(file_path: str) -> None:
     if os.path.exists(file_path):
         os.remove(file_path)
 
@@ -109,7 +109,7 @@ class DiskStorage(Storage):
             return None
         
     def store(self, key: CacheKey, data: Any) -> None:
-        __create_folder(self.get_cache_folder())
+        create_folder(self.get_cache_folder())
 
         if isinstance(data, pd.DataFrame):
             file_name = f'{uuid.uuid4()}.pqt'
@@ -124,7 +124,7 @@ class DiskStorage(Storage):
         self.update_index(key, file_name)
     
     def delete_file(self, key: CacheKey) -> None:
-        __delete_file(self.get_file_path(self.__index[key]))
+        delete_file(self.get_file_path(self.__index[key]))
 
     def clear(self) -> None:
         self.sync_index()
