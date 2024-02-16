@@ -7,6 +7,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg?maxAge=3600)](./LICENSE) 
 [![pypi](https://img.shields.io/pypi/v/doorget.svg)](https://pypi.org/project/doorget/)
 [![python supported](https://img.shields.io/pypi/pyversions/doorget.svg)](https://pypi.org/project/doorget/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Python package which memoizes functions and supports data dependencies across them.
 With the `cache` decorator the memoization of your code is low touch.
