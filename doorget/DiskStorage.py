@@ -108,7 +108,7 @@ class DiskStorage(Storage):
 
         try:
             if file_name.endswith(".pqt"):
-                return pd.read_parquet(self.get_file_path())
+                return pd.read_parquet(self.get_file_path(file_name))
         except:
             return None
 

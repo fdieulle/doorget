@@ -11,6 +11,9 @@ description = "Memoize package supporting data dependencies"
 readme = "README.md"
 keywords = ["memoize", "memoization", "doorget"]
 requires-python = ">=3.6"
+dependencies = [
+  "pandas", "pyarrow",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
